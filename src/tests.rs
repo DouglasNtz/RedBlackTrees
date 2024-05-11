@@ -46,7 +46,7 @@ fn get_sucessor_predecessor_test() {
     assert_eq!(b.get_predecessor(&15), Some((&13, &"G")));
     assert_eq!(b.get_predecessor(&17), Some((&15, &"A")));
     assert_eq!(b.get(&18), Some(&"M"));  // devido a rotação o 18 M vem primeiro em altura. O 18I é seu filho esquerdo
-    assert_eq!(b.get_predecessor(s&18), Some((&18, &"I")));
+    assert_eq!(b.get_predecessor(&18), Some((&18, &"I")));
     assert_eq!(b.get_predecessor(&20), Some((&18, &"M")));
 
 }
