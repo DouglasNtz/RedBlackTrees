@@ -1,4 +1,5 @@
 use super::RedBlackTree;
+use rand::Rng;
 
 #[test]
 fn get_sucessor_predecessor_test() {
@@ -53,42 +54,24 @@ fn get_sucessor_predecessor_test() {
 
 #[test]
 fn counting_blacks_root_to_leafs_test() {
+
     let mut b = RedBlackTree::new();
 
-    b.insert(15, "A");
-    b.insert(6, "B");
-    b.insert(3, "C");
-    b.insert(2, "D");
-    b.insert(4, "E");
-    b.insert(7, "F");
-    b.insert(13, "G");
-    b.insert(9, "H");
-    b.insert(18, "I");
-    b.insert(17, "J");
-    b.insert(20, "K");
-    b.insert(2, "L");
-    b.insert(18, "M");
+    for i in 0..10000 {
+        b.insert(rand::random::<i32>(), "A")
+    }
 
-    assert_eq!(b.counting_blacks(), (true, Some(3))); // se fossemos contar NIL no fim daria 4
+    assert_eq!(b.counting_blacks().0, true); // se fossemos contar NIL no fim daria 4
 }
 
 #[test]
 fn colors_test() {  // root black e não pode haver pai Red com filho Red
+
     let mut b = RedBlackTree::new();
 
-    b.insert(15, "A");
-    b.insert(6, "B");
-    b.insert(3, "C");
-    b.insert(2, "D");
-    b.insert(4, "E");
-    b.insert(7, "F");
-    b.insert(13, "G");
-    b.insert(9, "H");
-    b.insert(18, "I");
-    b.insert(17, "J");
-    b.insert(20, "K");
-    b.insert(2, "L");
-    b.insert(18, "M");
+    for i in 0..10000 {
+        b.insert(rand::random::<i32>(), "A")
+    }
 
     assert!(b.red_not_parent_red());
 
