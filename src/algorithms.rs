@@ -751,6 +751,10 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                     }
                     j = pai;
                     continue;
+
+                } else {
+                    j = pai;
+                    continue;
                 }
             }
         }
