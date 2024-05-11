@@ -3,4 +3,4 @@ mod algorithms;
 #[cfg(test)]
 mod tests;
 
-//pub use algorithms::{RedBlackTree};
+pub use algorithms::{RedBlackTree};
