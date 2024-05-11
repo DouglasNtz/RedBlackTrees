@@ -611,17 +611,38 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         }
     }
 
-    pub fn counting_blacks(self: &Self) -> (bool, Option<usize>) {
+    fn indexes_subtree(self: &Self, index: usize) -> Vec<usize> {
 
-        let root = match self.root {
-            Some(k) => k,
-            None => return (true, Some(0))
-        };
+        let mut w = vec![];
+
+        match self.array[index].left {
+            Some(i) => {
+                let mut wl = self.indexes_subtree(i);
+                w.append(&mut wl);
+            }
+            None => {}
+        }
+
+        w.push(index);
+
+        match self.array[index].right {
+            Some(i) => {
+                let mut wr = self.indexes_subtree(i);
+                w.append(&mut wr);
+            }
+            None => {}
+        }
+        w
+    }
+
+    pub fn counting_blacks(self: &Self, root: usize) -> bool {
+
+        let indexes_subtree = self.indexes_subtree(root);
 
         let mut folhas = vec![];
 
-        for (index, element) in self.array.iter().enumerate() {
-            match (&element.left, &element.right) {
+        for &index in &indexes_subtree {
+            match (&self.array[index].left, &self.array[index].right) {
                 (None, None) => folhas.push(index),
                 _ => {}
             }
@@ -644,11 +665,8 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
             }
         }
 
-        if counting.iter().min().unwrap() == counting.iter().max().unwrap() {
-            (true, Some(counting[0]))
-        } else {
-            (false, None)
-        }
+        counting.iter().min().unwrap() == counting.iter().max().unwrap()
+
     }
 
     pub fn red_not_parent_red(self: &Self) -> bool {
@@ -684,6 +702,60 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         true
     }
 
+    pub fn binary_tree_property(self: &Self) -> bool {
+
+        let root = match self.root {
+            Some(k) => k,
+            None => return true
+        };
+
+        let mut folhas = vec![];
+
+        for (index, element) in self.array.iter().enumerate() {
+            match (&element.left, &element.right) {
+                (None, None) => folhas.push(index),
+                _ => {}
+            }
+        }
+
+        for index in folhas {
+
+            let mut j = index;
+
+            while j != root {
+
+                let pai = self.array[j].parent.unwrap();
+
+                if self.array[pai].value > self.array[j].value {
+
+                    match self.array[pai].left {
+                        Some(k) => {
+                            if k != j {
+                                return false
+                            }
+                        }
+                        None => return false
+                    }
+                    j = pai;
+                    continue;
+
+                } else if self.array[pai].value < self.array[j].value {
+
+                    match self.array[pai].right {
+                        Some(k) => {
+                            if k != j {
+                                return false
+                            }
+                        }
+                        None => return false
+                    }
+                    j = pai;
+                    continue;
+                }
+            }
+        }
+        true
+    }
     pub fn root_is_black(self: &Self) -> bool {
 
         match self.root {

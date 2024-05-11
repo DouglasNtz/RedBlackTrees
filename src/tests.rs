@@ -53,7 +53,7 @@ fn get_sucessor_predecessor_test() {
 }
 
 #[test]
-fn counting_blacks_root_to_leafs_test() {
+fn properties_test() {
 
     let mut b = RedBlackTree::new();
 
@@ -61,22 +61,17 @@ fn counting_blacks_root_to_leafs_test() {
         b.insert(rand::random::<i32>(), "A")
     }
 
-    assert_eq!(b.counting_blacks().0, true); // se fossemos contar NIL no fim daria 4
-}
-
-#[test]
-fn colors_test() {  // root black e não pode haver pai Red com filho Red
-
-    let mut b = RedBlackTree::new();
-
-    for i in 0..10000 {
-        b.insert(rand::random::<i32>(), "A")
+    for index in 0..b.len() {
+        assert_eq!(b.counting_blacks(index), true);
     }
 
     assert!(b.red_not_parent_red());
 
+    assert!(b.binary_tree_property());
+
     assert!(b.root_is_black());
 }
+
 fn deletion_test() {
 
     let list = [(&15,8), (&6,4), (&3,2), (&2,0), (&4,3), (&7,5), (&13,7), (&9,6), (&18,10), (&17,9), (&20,12)];
