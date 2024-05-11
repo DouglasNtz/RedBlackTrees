@@ -23,6 +23,8 @@ fn get_sucessor_predecessor_test() {
     assert_eq!(b.inorder(), vec![(&2, &"D"), (&2, &"L"), (&3, &"C"), (&4, &"E"), (&6, &"B"), (&7, &"F"), (&9, &"H"),
                                  (&13, &"G"), (&15, &"A"), (&17, &"J"), (&18, &"I"), (&18, &"M"), (&20, &"K")]);
 
+    assert!(b.binary_tree_property());
+
     println!("{:?}", b.inorder());
     assert_eq!(b.get_sucessor(&2), Some((&2, &"L")));
     assert_eq!(b.get_sucessor(&3), Some((&4, &"E")));
