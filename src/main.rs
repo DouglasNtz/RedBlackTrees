@@ -1,4 +1,4 @@
-use RedBlackTrees::RedBlackTree;
+use RedBlackTrees::{RedBlackTree, RedBlackTreeWithReps};
 fn main() {
 
     let mut b = RedBlackTree::new();
@@ -18,4 +18,23 @@ fn main() {
     b.insert(18, "M");
 
     b.print_elements();
+
+    let mut b = RedBlackTreeWithReps::new();
+
+    for i in 0..10000 {
+        b.insert(rand::random::<u8>() % 2, "A")
+    }
+
+    for index in 0..b.len() {
+        assert_eq!(b.counting_blacks(index), true);
+    }
+
+    assert!(b.red_not_parent_red());
+
+    assert!(b.binary_tree_property());
+
+    assert!(b.root_is_black());
+
+    b.print_elements();
+
 }
