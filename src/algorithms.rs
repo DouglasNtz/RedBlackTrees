@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 enum Color {
     Red,
     Black
@@ -35,10 +35,6 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
 
         Self {root: None, array: Vec::new()}
     }
-
-    // Quando temos chaves iguais, As rotações mantém a ordem em sucessor, predecessor e inorder.
-    // Ou seja, mesmo que a segunda chave igual inserida não seja o filho direito como no caso
-    // da arvore binária, ela será o pai e a primeira chave será o filho esquerdo.
 
     fn left_rotate(self: &mut Self, index: usize) -> bool {
 
@@ -293,6 +289,154 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         }
 
         self.array[self.root.unwrap()].color = Black;
+    }
+
+    pub fn deletion(self: &mut Self, value: &T) -> Option<E> {
+
+        let opt_index = self.get_index(value);
+
+        let index = match opt_index {
+            Some(i) => i,
+            None => return None
+        };
+
+        let mut fixed = if let Red = self.array[index].color { false } else { true };
+
+        match (self.array[index].left, self.array[index].right) {
+            (None, None) => {
+                match self.array[index].parent {
+                    Some(i) => {
+                        if self.array[index].value < self.array[i].value {
+                            self.array[i].left = None;
+                        } else {
+                            self.array[i].right = None;
+                        }
+                    },
+                    None => {
+                        self.root = None;
+                        fixed = false;
+                    }
+                }
+            },
+            (None, Some(j)) => {
+                match self.array[index].parent {
+                    Some(i) => {
+                        if self.array[index].value < self.array[i].value {
+                            self.array[i].left = Some(j);
+                        } else {
+                            self.array[i].right = Some(j);
+                        }
+                        self.array[j].parent = Some(i);
+                    },
+                    None => {
+                        self.root = Some(j);
+                        self.array[j].parent = None;
+                    }
+                }
+            },
+            (Some(j), None) => {
+                match self.array[index].parent {
+                    Some(i) => {
+                        if self.array[index].value < self.array[i].value {
+                            self.array[i].left = Some(j);
+                        } else {
+                            self.array[i].right = Some(j);
+                        }
+                        self.array[j].parent = Some(i);
+                    },
+                    None => {
+                        self.root = Some(j);
+                        self.array[j].parent = None;
+                    }
+                }
+            },
+            (Some(j1), Some(j2)) => {
+
+                let sucessor = self.sucessor(index).unwrap();
+
+                fixed = if let Red = self.array[sucessor].color { false } else { true };
+
+                self.array[sucessor].color = self.array[index].color;
+
+                self.array[j1].parent = Some(sucessor);
+                self.array[sucessor].left = Some(j1);
+
+                let pai_sucessor = self.array[sucessor].parent.unwrap();
+
+                match self.array[index].parent {
+                    Some(i) => {
+                        if self.array[index].value < self.array[i].value {
+                            self.array[i].left = Some(sucessor);
+                        } else {
+                            self.array[i].right = Some(sucessor);
+                        }
+                        self.array[sucessor].parent = Some(i);
+                    },
+                    None => {
+                        self.root = Some(sucessor);
+                        self.array[sucessor].parent = None;
+                    }
+                }
+
+                if sucessor != j2 {
+
+                    self.array[j2].parent = Some(sucessor);
+
+                    let filho_sucessor = self.array[sucessor].right;
+                    self.array[sucessor].right = Some(j2);
+
+                    match filho_sucessor {
+                        Some(k) => {
+                            self.array[pai_sucessor].left = Some(k);
+                            self.array[k].parent = Some(pai_sucessor)
+                        }
+                        None => {
+                            self.array[pai_sucessor].left = None;
+                        }
+                    }
+                }
+            }
+        }
+
+        let last = self.len() - 1;
+        if index != last {
+            match self.array[last].parent {
+                Some(i) => {
+                    if self.array[last].value < self.array[i].value {
+                        self.array[i].left = Some(index);
+                    } else {
+                        self.array[i].right = Some(index);
+                    }
+                },
+                None => {
+                    self.root = Some(index);
+                }
+            }
+            match self.array[last].left {
+                Some(i) => {
+                    self.array[i].parent = Some(index)
+                },
+                None => {}
+            }
+            match self.array[last].right {
+                Some(i) => {
+                    self.array[i].parent = Some(index)
+                },
+                None => {}
+            }
+            self.array.swap(index, last);
+        }
+
+        if fixed {
+            self.deletion_fixed_up();
+        }
+
+        return Some(self.array.pop().unwrap().satelite)
+    }
+
+    fn deletion_fixed_up(self: &Self) {
+
+
     }
 
     pub fn minimum(self: &Self) -> Option<&T> {
@@ -698,7 +842,7 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
 
             while j != root {
 
-                if let (&Red, &Red) = (&self.array[j].color, &self.array[self.array[j].parent.unwrap()].color) {
+                if let (Red, Red) = (self.array[j].color, self.array[self.array[j].parent.unwrap()].color) {
                     return false
                 } else {
                     j = self.array[j].parent.unwrap();
@@ -982,9 +1126,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
 
                                     match self.array[pai].right {
                                         Some(j) => {
-
                                             if j == index {
-
                                                 self.left_rotate(pai);
                                                 index = pai;  // pois o pai virou filho esquerdo do seu filho direito
                                                 pai = self.array[index].parent.unwrap();
@@ -1009,9 +1151,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                             None => {
                                 match self.array[pai].right {
                                     Some(j) => {
-
                                         if j == index {
-
                                             self.left_rotate(pai);
                                             index = pai;  // pois o pai virou filho esquerdo do seu filho direito
                                             pai = self.array[index].parent.unwrap();
@@ -1211,6 +1351,179 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
             }
         }
         self.array[self.root.unwrap()].color = Black;
+    }
+
+    pub fn deletion(self: &mut Self, value: &T) -> Option<E> {
+
+        let opt_index = self.get_index(value);
+
+        let index = match opt_index {
+            Some(i) => i,
+            None => return None
+        };
+
+        let mut fixed = if let Red = self.array[index].color { false } else { true };
+
+        match (self.array[index].left, self.array[index].right) {
+            (None, None) => {
+                match self.array[index].parent {
+                    Some(i) => {
+                        match self.array[i].left {
+                            Some(j) => {
+                                if j == index {
+                                    self.array[i].left = None;
+                                } else {
+                                    self.array[i].right = None;
+                                }
+                            }
+                            None => self.array[i].right = None
+                        }
+                    },
+                    None => {
+                        self.root = None;
+                        fixed = false;
+                    }
+                }
+            },
+            (None, Some(j2)) => {
+                match self.array[index].parent {
+                    Some(i) => {
+                        match self.array[i].left {
+                            Some(j) => {
+                                if j == index {
+                                    self.array[i].left = Some(j2);
+                                } else {
+                                    self.array[i].right = Some(j2);
+                                }
+                            }
+                            None => self.array[i].right = Some(j2)
+                        }
+                        self.array[j2].parent = Some(i);
+                    },
+                    None => {
+                        self.root = Some(j2);
+                        self.array[j2].parent = None;
+                    }
+                }
+            },
+            (Some(j1), None) => {
+                match self.array[index].parent {
+                    Some(i) => {
+                        match self.array[i].left {
+                            Some(j) => {
+                                if j == index {
+                                    self.array[i].left = Some(j1);
+                                } else {
+                                    self.array[i].right = Some(j1);
+                                }
+                            }
+                            None => self.array[i].right = Some(j1)
+                        }
+                        self.array[j1].parent = Some(i);
+                    },
+                    None => {
+                        self.root = Some(j1);
+                        self.array[j1].parent = None;
+                    }
+                }
+            },
+            (Some(j1), Some(j2)) => {
+
+                let sucessor = self.sucessor(index).unwrap();
+
+                fixed = if let Red = self.array[sucessor].color { false } else { true };
+
+                self.array[sucessor].color = self.array[index].color;
+
+                self.array[j1].parent = Some(sucessor);
+                self.array[sucessor].left = Some(j1);
+
+                let pai_sucessor = self.array[sucessor].parent.unwrap();
+
+                match self.array[index].parent {
+                    Some(i) => {
+                        match self.array[i].left {
+                            Some(j) => {
+                                if j == index {
+                                    self.array[i].left = Some(sucessor);
+                                } else {
+                                    self.array[i].right = Some(sucessor);
+                                }
+                            }
+                            None => self.array[i].right = Some(sucessor)
+                        }
+                        self.array[sucessor].parent = Some(i);
+                    },
+                    None => {
+                        self.root = Some(sucessor);
+                        self.array[sucessor].parent = None;
+                    }
+                }
+
+                if sucessor != j2 {
+
+                    self.array[j2].parent = Some(sucessor);
+
+                    let filho_sucessor = self.array[sucessor].right;
+                    self.array[sucessor].right = Some(j2);
+
+                    match filho_sucessor {
+                        Some(k) => {
+                            self.array[pai_sucessor].left = Some(k);
+                            self.array[k].parent = Some(pai_sucessor)
+                        }
+                        None => {
+                            self.array[pai_sucessor].left = None;
+                        }
+                    }
+                }
+            }
+        }
+
+        let last = self.len() - 1;
+        if index != last {
+            match self.array[last].parent {
+                Some(i) => {
+                    match self.array[i].left {
+                        Some(j) => {
+                            if j == last {
+                                self.array[i].left = Some(index);
+                            } else {
+                                self.array[i].right = Some(index);
+                            }
+                        }
+                        None => self.array[i].right = Some(index)
+                    }
+                },
+                None => {
+                    self.root = Some(index);
+                }
+            }
+            match self.array[last].left {
+                Some(i) => {
+                    self.array[i].parent = Some(index)
+                },
+                None => {}
+            }
+            match self.array[last].right {
+                Some(i) => {
+                    self.array[i].parent = Some(index)
+                },
+                None => {}
+            }
+            self.array.swap(index, last);
+        }
+
+        if fixed {
+            self.deletion_fixed_up();
+        }
+
+        return Some(self.array.pop().unwrap().satelite)
+    }
+
+    fn deletion_fixed_up(self: &Self) {
+
+
     }
 
     pub fn minimum(self: &Self) -> Option<&T> {
@@ -1614,7 +1927,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
 
             while j != root {
 
-                if let (&Red, &Red) = (&self.array[j].color, &self.array[self.array[j].parent.unwrap()].color) {
+                if let (Red, Red) = (self.array[j].color, self.array[self.array[j].parent.unwrap()].color) {
                     return false
                 } else {
                     j = self.array[j].parent.unwrap();
