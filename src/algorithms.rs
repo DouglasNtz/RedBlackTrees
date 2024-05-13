@@ -380,7 +380,7 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                         self.array[j2].parent = Some(i);
                     },
                     None => {
-                        self.root = Some(j);
+                        self.root = Some(j2);
                         self.array[j2].parent = None;
                         self.array[j2].color = Black;
                         fixed = false;
@@ -522,7 +522,7 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         }
     }
 
-    fn deletion_fixed_up(self: &Self, mut x: Child, mut pai: usize) {
+    fn deletion_fixed_up(self: &mut Self, mut x: Child, mut pai: usize) {
 
         let root = match self.root {
             Some(i) => i,
@@ -564,7 +564,8 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                 } else {
 
                     if self.is_black(Right, irmao) {   // logo o esquerdo é vermelho
-                        self.array[self.array[irmao].left.unwrap()] = Black;
+                        let sobrinho_left = self.array[irmao].left.unwrap();
+                        self.array[sobrinho_left].color = Black;
                         self.array[irmao].color = Red;
                         self.right_rotate(irmao);
                         irmao = self.array[pai].right.unwrap();  // é o antigo filho esquerdo de irmao
@@ -573,7 +574,8 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                     self.array[pai].color = Black;
                     // caso tenhamos passado pelo if acima, o filho direito de irmao é o antigo irmao,
                     // caso não tenhamos passado, é um vermelho .. logo não é Nil
-                    self.array[self.array[irmao].right.unwrap()] = Black;
+                    let sobrinho_right = self.array[irmao].right.unwrap();
+                    self.array[sobrinho_right].color = Black;
                     self.left_rotate(pai);
                     match self.array[pai].left {
                         Some(i) => {
@@ -611,7 +613,8 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                 } else {
 
                     if self.is_black(Left, irmao) {   // logo o direito é vermelho
-                        self.array[self.array[irmao].right.unwrap()] = Black;
+                        let sobrinho_right = self.array[irmao].right.unwrap();
+                        self.array[sobrinho_right].color = Black;
                         self.array[irmao].color = Red;
                         self.left_rotate(irmao);
                         irmao = self.array[pai].left.unwrap();  // é o antigo filho direito de irmao
@@ -620,7 +623,8 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                     self.array[pai].color = Black;
                     // caso tenhamos passado pelo if acima, o filho esquerdo de irmao é o antigo irmao,
                     // caso não tenhamos passado, é um vermelho .. logo não é Nil
-                    self.array[self.array[irmao].left.unwrap()] = Black;
+                    let sobrinho_left = self.array[irmao].left.unwrap();
+                    self.array[sobrinho_left].color = Black;
                     self.right_rotate(pai);
                     match self.array[pai].right {
                         Some(i) => {
@@ -1133,6 +1137,52 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         Self {root: None, array: Vec::new()}
     }
 
+    fn is_left(self: &Self, index: usize) -> bool {
+
+        match self.array[index].parent {
+            Some(i) => {
+                match self.array[i].left {
+                    Some(j) => {
+                        if j == index { true } else { false }
+                    }
+                    None => false
+                }
+            },
+            None => false
+        }
+    }
+
+    fn is_right(self: &Self, index: usize) -> bool {
+
+        match self.array[index].parent {
+            Some(i) => {
+                match self.array[i].right {
+                    Some(j) => {
+                        if j == index { true } else { false }
+                    }
+                    None => false
+                }
+            },
+            None => false
+        }
+    }
+
+    fn left_is_nil(self: &Self, pai: usize) -> bool {
+
+        match self.array[pai].left {
+            Some(i) => false,
+            None => true
+        }
+    }
+
+    fn right_is_nil(self: &Self, pai: usize) -> bool {
+
+        match self.array[pai].right {
+            Some(i) => false,
+            None => true
+        }
+    }
+
     // Quando temos chaves iguais, As rotações mantém a ordem em sucessor, predecessor e inorder.
     // Ou seja, mesmo que a segunda chave igual inserida não seja o filho direito como no caso
     // da arvore binária, ela será o pai e a primeira chave será o filho esquerdo.
@@ -1395,24 +1445,21 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
             None => return None
         };
 
-        let fixed_index;
-
         let mut fixed = if let Red = self.array[index].color { false } else { true };
+
+        let mut x = Left;
+        let mut xp = 0;
 
         match (self.array[index].left, self.array[index].right) {
             (None, None) => {
-                fixed_index = None;
                 match self.array[index].parent {
                     Some(i) => {
-                        match self.array[i].left {
-                            Some(j) => {
-                                if j == index {
-                                    self.array[i].left = None;
-                                } else {
-                                    self.array[i].right = None;
-                                }
-                            }
-                            None => self.array[i].right = None
+                        if self.is_left(index) {
+                            self.array[i].left = None;
+                            (x, xp) = (Left, i);
+                        } else {
+                            self.array[i].right = None;
+                            (x, xp) = (Right, i);
                         }
                     },
                     None => {
@@ -1422,46 +1469,42 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                 }
             },
             (None, Some(j2)) => {
-                fixed_index = Some(j2);
                 match self.array[index].parent {
                     Some(i) => {
-                        match self.array[i].left {
-                            Some(j) => {
-                                if j == index {
-                                    self.array[i].left = Some(j2);
-                                } else {
-                                    self.array[i].right = Some(j2);
-                                }
-                            }
-                            None => self.array[i].right = Some(j2)
+                        if self.is_left(index) {
+                            self.array[i].left = Some(j2);
+                            (x, xp) = (Left, i);
+                        } else {
+                            self.array[i].right = Some(j2);
+                            (x, xp) = (Right, i);
                         }
                         self.array[j2].parent = Some(i);
                     },
                     None => {
                         self.root = Some(j2);
                         self.array[j2].parent = None;
+                        self.array[j2].color = Black;
+                        fixed = false;
                     }
                 }
             },
             (Some(j1), None) => {
-                fixed_index = Some(j1);
                 match self.array[index].parent {
                     Some(i) => {
-                        match self.array[i].left {
-                            Some(j) => {
-                                if j == index {
-                                    self.array[i].left = Some(j1);
-                                } else {
-                                    self.array[i].right = Some(j1);
-                                }
-                            }
-                            None => self.array[i].right = Some(j1)
+                        if self.is_left(index) {
+                            self.array[i].left = Some(j1);
+                            (x, xp) = (Left, i);
+                        } else {
+                            self.array[i].right = Some(j1);
+                            (x, xp) = (Right, i);
                         }
                         self.array[j1].parent = Some(i);
                     },
                     None => {
                         self.root = Some(j1);
                         self.array[j1].parent = None;
+                        self.array[j1].color = Black;
+                        fixed = false;
                     }
                 }
             },
@@ -1471,7 +1514,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
 
                 let filho_sucessor = self.array[sucessor].right;
 
-                fixed_index = filho_sucessor;
+                (x, xp) = (Right, sucessor);
 
                 fixed = if let Red = self.array[sucessor].color { false } else { true };
 
@@ -1484,15 +1527,10 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
 
                 match self.array[index].parent {
                     Some(i) => {
-                        match self.array[i].left {
-                            Some(j) => {
-                                if j == index {
-                                    self.array[i].left = Some(sucessor);
-                                } else {
-                                    self.array[i].right = Some(sucessor);
-                                }
-                            }
-                            None => self.array[i].right = Some(sucessor)
+                        if self.is_left(index) {
+                            self.array[i].left = Some(sucessor);
+                        } else {
+                            self.array[i].right = Some(sucessor);
                         }
                         self.array[sucessor].parent = Some(i);
                     },
@@ -1525,15 +1563,10 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         if index != last {
             match self.array[last].parent {
                 Some(i) => {
-                    match self.array[i].left {
-                        Some(j) => {
-                            if j == last {
-                                self.array[i].left = Some(index);
-                            } else {
-                                self.array[i].right = Some(index);
-                            }
-                        }
-                        None => self.array[i].right = Some(index)
+                    if self.is_left(last) {
+                        self.array[i].left = Some(index);
+                    } else {
+                        self.array[i].right = Some(index);
                     }
                 },
                 None => {
@@ -1556,15 +1589,154 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         }
 
         if fixed {
-            self.deletion_fixed_up(fixed_index);
+            self.deletion_fixed_up(x, xp);
         }
 
         return Some(self.array.pop().unwrap().satelite)
     }
 
-    fn deletion_fixed_up(self: &Self, opt_index: Option<usize>) {
+    fn is_black(self: &Self, x: Child, pai: usize) -> bool {
 
+        match x  {
+            Left => {
+                match self.array[pai].left {
+                    Some(i) => {
+                        match self.array[i].color {
+                            Red => false,
+                            Black => true
+                        }
+                    }
+                    None => true
+                }
+            }
+            Right => {
+                match self.array[pai].right {
+                    Some(i) => {
+                        match self.array[i].color {
+                            Red => false,
+                            Black => true
+                        }
+                    }
+                    None => true
+                }
+            }
+        }
+    }
 
+    fn deletion_fixed_up(self: &mut Self, mut x: Child, mut pai: usize) {
+
+        let root = match self.root {
+            Some(i) => i,
+            None => return
+        };
+
+        let mut irmao;
+
+        let mut condition = self.is_black(x, pai);
+
+        while condition {  // se x se tornar root, colocamos como black e break loop. Senão continuamos.
+
+            if let Left = x {
+
+                irmao = self.array[pai].right.unwrap();  // enquanto index é black e não root, ele tem que ter irmao
+
+                if let Red = self.array[irmao].color {  // logo ele tem dois filhos black, pois seu irmao é black
+                    self.array[irmao].color = Black;
+                    self.array[pai].color = Red;
+                    self.left_rotate(pai);
+                    irmao = self.array[pai].right.unwrap();  // é o antigo filho left do irmao, que é black
+                }
+
+                if self.is_black(Left, irmao) && self.is_black(Right, irmao) {
+                    self.array[irmao].color = Red;
+                    match self.array[pai].parent {
+                        Some(i) => {
+                            if self.is_left(pai) {
+                                (x, pai) = (Left, i)
+                            } else {
+                                (x, pai) = (Right, i)
+                            }
+                        }
+                        None => {
+                            self.array[pai].color = Black;
+                            break;
+                        }
+                    }
+                } else {
+
+                    if self.is_black(Right, irmao) {   // logo o esquerdo é vermelho
+                        let sobrinho_left = self.array[irmao].left.unwrap();
+                        self.array[sobrinho_left].color = Black;
+                        self.array[irmao].color = Red;
+                        self.right_rotate(irmao);
+                        irmao = self.array[pai].right.unwrap();  // é o antigo filho esquerdo de irmao
+                    }
+                    self.array[irmao].color = self.array[pai].color;
+                    self.array[pai].color = Black;
+                    // caso tenhamos passado pelo if acima, o filho direito de irmao é o antigo irmao,
+                    // caso não tenhamos passado, é um vermelho .. logo não é Nil
+                    let sobrinho_right = self.array[irmao].right.unwrap();
+                    self.array[sobrinho_right].color = Black;
+                    self.left_rotate(pai);
+                    match self.array[pai].left {
+                        Some(i) => {
+                            self.array[i].color = Black;
+                            break;
+                        }
+                        None => break
+                    }
+                }
+            } else {
+                irmao = self.array[pai].left.unwrap();  // enquanto index é black e não root, ele tem que ter irmao
+
+                if let Red = self.array[irmao].color {  // logo ele tem dois filhos black, pois seu irmao é black
+                    self.array[irmao].color = Black;
+                    self.array[pai].color = Red;
+                    self.right_rotate(pai);
+                    irmao = self.array[pai].left.unwrap();  // é o antigo filho rigth do irmao, que é black
+                }
+
+                if self.is_black(Left, irmao) && self.is_black(Right, irmao) {
+                    self.array[irmao].color = Red;
+                    match self.array[pai].parent {
+                        Some(i) => {
+                            if self.is_left(pai) {
+                                (x, pai) = (Left, i)
+                            } else {
+                                (x, pai) = (Right, i)
+                            }
+                        }
+                        None => {
+                            self.array[pai].color = Black;
+                            break;
+                        }
+                    }
+                } else {
+
+                    if self.is_black(Left, irmao) {   // logo o direito é vermelho
+                        let sobrinho_right = self.array[irmao].right.unwrap();
+                        self.array[sobrinho_right].color = Black;
+                        self.array[irmao].color = Red;
+                        self.left_rotate(irmao);
+                        irmao = self.array[pai].left.unwrap();  // é o antigo filho direito de irmao
+                    }
+                    self.array[irmao].color = self.array[pai].color;
+                    self.array[pai].color = Black;
+                    // caso tenhamos passado pelo if acima, o filho esquerdo de irmao é o antigo irmao,
+                    // caso não tenhamos passado, é um vermelho .. logo não é Nil
+                    let sobrinho_left = self.array[irmao].left.unwrap();
+                    self.array[sobrinho_left].color = Black;
+                    self.right_rotate(pai);
+                    match self.array[pai].right {
+                        Some(i) => {
+                            self.array[i].color = Black;
+                            break;
+                        }
+                        None => break
+                    }
+                }
+            }
+        }
     }
 
     pub fn minimum(self: &Self) -> Option<&T> {
