@@ -22,7 +22,6 @@ fn get_sucessor_predecessor_test() {
     assert_eq!(b.inorder(), vec![(&2, &"D"), (&3, &"C"), (&4, &"E"), (&6, &"B"), (&7, &"F"), (&9, &"H"),
                                  (&13, &"G"), (&15, &"A"), (&17, &"J"), (&18, &"I"), (&20, &"K")]);
 
-    assert!(b.binary_tree_property());
 
     println!("{:?}", b.inorder());
     assert_eq!(b.get_sucessor(&2), Some((&3, &"C")));
@@ -97,6 +96,16 @@ fn get_sucessor_predecessor_test() {
     assert_eq!(b.get(&18), Some(&"M"));  // devido a rotação o 18 M vem primeiro em altura. O 18I é seu filho esquerdo
     assert_eq!(b.get_predecessor(&18), Some((&18, &"I")));
     assert_eq!(b.get_predecessor(&20), Some((&18, &"M")));
+
+    for index in 0..b.len() {
+        assert_eq!(b.counting_blacks(index), true);
+    }
+
+    assert!(b.red_not_parent_red());
+
+    assert!(b.binary_tree_property());
+
+    assert!(b.root_is_black());
 
 }
 
@@ -204,9 +213,56 @@ fn deletion_test() {
 
         v.remove(element.1);
 
-        //b.deletion(element.0);
-        //println!("{}", element.0);
-        //assert_eq!(b.inorder(), v);
+        b.deletion(element.0);
+
+        for index in 0..b.len() {
+            assert_eq!(b.counting_blacks(index), true);
+        }
+
+        assert!(b.red_not_parent_red());
+
+        assert!(b.binary_tree_property());
+
+        assert!(b.root_is_black());
+    }
+
+    //-------
+
+    let list = [(&15,8), (&6,4), (&3,2), (&2,0), (&4,3), (&7,5), (&13,7), (&9,6), (&18,10), (&17,9), (&20,12)];
+
+    for element in list {
+        let mut b = RedBlackTreeWithReps::new();
+
+        b.insert(15, "A");
+        b.insert(6, "B");
+        b.insert(3, "C");
+        b.insert(2, "D");
+        b.insert(4, "E");
+        b.insert(7, "F");
+        b.insert(13, "G");
+        b.insert(9, "H");
+        b.insert(18, "I");
+        b.insert(17, "J");
+        b.insert(20, "K");
+        b.insert(2, "L");
+        b.insert(18, "M");
+
+        let mut v = vec![(&2, &"D"), (&2, &"L"), (&3, &"C"), (&4, &"E"), (&6, &"B"), (&7, &"F"), (&9, &"H"),
+                         (&13, &"G"), (&15, &"A"), (&17, &"J"), (&18, &"I"), (&18, &"M"), (&20, &"K")];
+
+        v.remove(element.1);
+
+        b.deletion(element.0);
+
+        for index in 0..b.len() {
+            assert_eq!(b.counting_blacks(index), true);
+        }
+
+        assert!(b.red_not_parent_red());
+
+        assert!(b.binary_tree_property());
+
+        assert!(b.root_is_black());
     }
 
 }
