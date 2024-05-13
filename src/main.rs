@@ -23,15 +23,7 @@ fn main() {
 
     b.print_elements();
 
-    for index in 0..b.len() {
-        assert_eq!(b.counting_blacks(index), true);
-    }
-
-    assert!(b.red_not_parent_red());
-
-    assert!(b.binary_tree_property());
-
-    assert!(b.root_is_black());
+    assert!(b.is_red_black_tree());
 
     //------------
 
@@ -57,15 +49,7 @@ fn main() {
 
     b.print_elements();
 
-    for index in 0..b.len() {
-        assert_eq!(b.counting_blacks(index), true);
-    }
-
-    assert!(b.red_not_parent_red());
-
-    assert!(b.binary_tree_property());
-
-    assert!(b.root_is_black());
+    assert!(b.is_red_black_tree());
 
     //------------
 
@@ -76,15 +60,7 @@ fn main() {
         b.insert(rand::random::<u8>() % 2, "A")
     }
 
-    for index in 0..b.len() {
-        assert_eq!(b.counting_blacks(index), true);
-    }
-
-    assert!(b.red_not_parent_red());
-
-    assert!(b.binary_tree_property());
-
-    assert!(b.root_is_black());
+    assert!(b.is_red_black_tree());
 
     //b.print_elements();
 
@@ -97,15 +73,7 @@ fn main() {
         b.insert(rand::random::<u8>() % 2, "A")
     }
 
-    for index in 0..b.len() {
-        assert_eq!(b.counting_blacks(index), true);
-    }
-
-    assert!(b.red_not_parent_red());
-
-    assert!(b.binary_tree_property());
-
-    assert!(b.root_is_black());
+    assert!(b.is_red_black_tree());
 
     //b.print_elements();
 }

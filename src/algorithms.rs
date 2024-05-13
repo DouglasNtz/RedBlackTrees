@@ -985,7 +985,7 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         w
     }
 
-    pub fn counting_blacks(self: &Self, root: usize) -> bool {
+    fn counting_blacks(self: &Self, root: usize) -> bool {
 
         let indexes_subtree = self.indexes_subtree(root);
 
@@ -1019,7 +1019,7 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
 
     }
 
-    pub fn red_not_parent_red(self: &Self) -> bool {
+    fn red_not_parent_red(self: &Self) -> bool {
 
         let root = match self.root {
             Some(k) => k,
@@ -1051,8 +1051,41 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         }
         true
     }
+    fn min_max_subtree_property(self: &Self, index: usize) -> bool {
 
-    pub fn binary_tree_property(self: &Self) -> bool {
+        let max_left = match self.array[index].left {
+            Some(i) => {
+                let v = self.indexes_subtree(i);
+                let mut max = v[0];
+                for j in v {
+                    if self.array[j].value > self.array[max].value {
+                        max = j;
+                    }
+                }
+                if self.array[max].value < self.array[index].value { true } else { false }
+            }
+            None => true
+        };
+
+        let min_right = match self.array[index].right {
+            Some(i) => {
+                let v = self.indexes_subtree(i);
+                let mut min = v[0];
+                for j in v {
+                    if self.array[j].value < self.array[min].value {
+                        min = j;
+                    }
+                }
+                if self.array[min].value > self.array[index].value { true } else { false }
+            }
+            None => true
+        };
+
+        max_left && min_right
+
+    }
+
+    fn binary_tree_property(self: &Self) -> bool {
 
         let root = match self.root {
             Some(k) => k,
@@ -1110,12 +1143,40 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         true
     }
 
-    pub fn root_is_black(self: &Self) -> bool {
+    fn root_is_black(self: &Self) -> bool {
 
         match self.root {
             Some(i) => if let Black = self.array[i].color { true } else { false },
             None => true
         }
+    }
+
+    pub fn is_red_black_tree(self: &Self) -> bool {
+
+        if !self.root_is_black() {
+            return false
+        }
+
+        if !self.red_not_parent_red() {
+            return false
+        }
+
+        if !self.binary_tree_property() {
+            return false
+        }
+
+        for index in 0..self.len() {
+            if !self.counting_blacks(index) {
+                return false
+            }
+        }
+
+        for index in 0..self.len() {
+            if !self.min_max_subtree_property(index) {
+                return false
+            }
+        }
+        true
     }
 }
 
@@ -2084,7 +2145,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         w
     }
 
-    pub fn counting_blacks(self: &Self, root: usize) -> bool {
+    fn counting_blacks(self: &Self, root: usize) -> bool {
 
         let indexes_subtree = self.indexes_subtree(root);
 
@@ -2118,7 +2179,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
 
     }
 
-    pub fn red_not_parent_red(self: &Self) -> bool {
+    fn red_not_parent_red(self: &Self) -> bool {
 
         let root = match self.root {
             Some(k) => k,
@@ -2151,7 +2212,41 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         true
     }
 
-    pub fn binary_tree_property(self: &Self) -> bool {
+    fn min_max_subtree_property(self: &Self, index: usize) -> bool {
+
+        let max_left = match self.array[index].left {
+            Some(i) => {
+                let v = self.indexes_subtree(i);
+                let mut max = v[0];
+                for j in v {
+                    if self.array[j].value > self.array[max].value {
+                        max = j;
+                    }
+                }
+                if self.array[max].value <= self.array[index].value { true } else { false }
+            }
+            None => true
+        };
+
+        let min_right = match self.array[index].right {
+            Some(i) => {
+                let v = self.indexes_subtree(i);
+                let mut min = v[0];
+                for j in v {
+                    if self.array[j].value < self.array[min].value {
+                        min = j;
+                    }
+                }
+                if self.array[min].value >= self.array[index].value { true } else { false }
+            }
+            None => true
+        };
+
+        max_left && min_right
+
+    }
+
+    fn binary_tree_property(self: &Self) -> bool {
 
         let root = match self.root {
             Some(k) => k,
@@ -2209,12 +2304,40 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         }
         true
     }
-    pub fn root_is_black(self: &Self) -> bool {
+    fn root_is_black(self: &Self) -> bool {
 
         match self.root {
             Some(i) => if let Black = self.array[i].color { true } else { false },
             None => true
         }
+    }
+
+    pub fn is_red_black_tree(self: &Self) -> bool {
+
+        if !self.root_is_black() {
+            return false
+        }
+
+        if !self.red_not_parent_red() {
+            return false
+        }
+
+        if !self.binary_tree_property() {
+            return false
+        }
+
+        for index in 0..self.len() {
+            if !self.counting_blacks(index) {
+                return false
+            }
+        }
+
+        for index in 0..self.len() {
+            if !self.min_max_subtree_property(index) {
+                return false
+            }
+        }
+        true
     }
 }
 

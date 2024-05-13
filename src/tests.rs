@@ -22,8 +22,8 @@ fn get_sucessor_predecessor_test() {
     assert_eq!(b.inorder(), vec![(&2, &"D"), (&3, &"C"), (&4, &"E"), (&6, &"B"), (&7, &"F"), (&9, &"H"),
                                  (&13, &"G"), (&15, &"A"), (&17, &"J"), (&18, &"I"), (&20, &"K")]);
 
+    assert!(b.is_red_black_tree());
 
-    println!("{:?}", b.inorder());
     assert_eq!(b.get_sucessor(&2), Some((&3, &"C")));
     assert_eq!(b.get_sucessor(&3), Some((&4, &"E")));
     assert_eq!(b.get_sucessor(&4), Some((&6, &"B")));
@@ -70,7 +70,8 @@ fn get_sucessor_predecessor_test() {
     assert_eq!(b.inorder(), vec![(&2, &"D"), (&2, &"L"), (&3, &"C"), (&4, &"E"), (&6, &"B"), (&7, &"F"), (&9, &"H"),
                                  (&13, &"G"), (&15, &"A"), (&17, &"J"), (&18, &"I"), (&18, &"M"), (&20, &"K")]);
 
-    println!("{:?}", b.inorder());
+    assert!(b.is_red_black_tree());
+
     assert_eq!(b.get_sucessor(&2), Some((&2, &"L")));
     assert_eq!(b.get_sucessor(&3), Some((&4, &"E")));
     assert_eq!(b.get_sucessor(&4), Some((&6, &"B")));
@@ -97,16 +98,6 @@ fn get_sucessor_predecessor_test() {
     assert_eq!(b.get_predecessor(&18), Some((&18, &"I")));
     assert_eq!(b.get_predecessor(&20), Some((&18, &"M")));
 
-    for index in 0..b.len() {
-        assert_eq!(b.counting_blacks(index), true);
-    }
-
-    assert!(b.red_not_parent_red());
-
-    assert!(b.binary_tree_property());
-
-    assert!(b.root_is_black());
-
 }
 
 #[test]
@@ -118,15 +109,7 @@ fn properties_test() {
         b.insert(rand::random::<i32>(), "A")
     }
 
-    for index in 0..b.len() {
-        assert_eq!(b.counting_blacks(index), true);
-    }
-
-    assert!(b.red_not_parent_red());
-
-    assert!(b.binary_tree_property());
-
-    assert!(b.root_is_black());
+    assert!(b.is_red_black_tree());
 
     //--------
 
@@ -136,16 +119,7 @@ fn properties_test() {
         b.insert(rand::random::<u8>(), "A")
     }
 
-    for index in 0..b.len() {
-        assert_eq!(b.counting_blacks(index), true);
-    }
-
-    assert!(b.red_not_parent_red());
-
-    assert!(b.binary_tree_property());
-
-    assert!(b.root_is_black());
-
+    assert!(b.is_red_black_tree());
 }
 
 #[test]
@@ -156,16 +130,7 @@ fn properties_with_reps_test() {
     for i in 0..10000 {
         b.insert(rand::random::<i32>(), "A")
     }
-
-    for index in 0..b.len() {
-        assert_eq!(b.counting_blacks(index), true);
-    }
-
-    assert!(b.red_not_parent_red());
-
-    assert!(b.binary_tree_property());
-
-    assert!(b.root_is_black());
+    assert!(b.is_red_black_tree());
 
     //--------
 
@@ -174,16 +139,7 @@ fn properties_with_reps_test() {
     for i in 0..10000 {
         b.insert(rand::random::<u8>(), "A")
     }
-
-    for index in 0..b.len() {
-        assert_eq!(b.counting_blacks(index), true);
-    }
-
-    assert!(b.red_not_parent_red());
-
-    assert!(b.binary_tree_property());
-
-    assert!(b.root_is_black());
+    assert!(b.is_red_black_tree());
 
 }
 
@@ -215,15 +171,7 @@ fn deletion_test() {
 
         b.deletion(element.0);
 
-        for index in 0..b.len() {
-            assert_eq!(b.counting_blacks(index), true);
-        }
-
-        assert!(b.red_not_parent_red());
-
-        assert!(b.binary_tree_property());
-
-        assert!(b.root_is_black());
+        assert!(b.is_red_black_tree());
     }
 
     //-------
@@ -254,15 +202,7 @@ fn deletion_test() {
 
         b.deletion(element.0);
 
-        for index in 0..b.len() {
-            assert_eq!(b.counting_blacks(index), true);
-        }
-
-        assert!(b.red_not_parent_red());
-
-        assert!(b.binary_tree_property());
-
-        assert!(b.root_is_black());
+        assert!(b.is_red_black_tree());
     }
 
 }
