@@ -533,6 +533,19 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
 
         let mut condition = self.is_black(x, pai);
 
+        if !condition {
+            match x {   // se for vermelho, muda pra preto e nem entra no while
+                Left => {
+                    let left = self.array[pai].left.unwrap();
+                    self.array[left].color = Black;
+                }
+                Right => {
+                    let right = self.array[pai].right.unwrap();
+                    self.array[right].color = Black;
+                }
+            }
+        }
+
         while condition {  // se x se tornar root, colocamos como black e break loop. Senão continuamos.
 
             if let Left = x {
@@ -555,6 +568,7 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                             } else {
                                 (x, pai) = (Right, i)
                             }
+                            condition = self.is_black(x, pai);
                         }
                         None => {
                             self.array[pai].color = Black;
@@ -577,13 +591,8 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                     let sobrinho_right = self.array[irmao].right.unwrap();
                     self.array[sobrinho_right].color = Black;
                     self.left_rotate(pai);
-                    match self.array[pai].left {
-                        Some(i) => {
-                            self.array[i].color = Black;
-                            break;
-                        }
-                        None => break
-                    }
+                    self.array[root].color = Black;
+                    break;
                 }
             } else {
                 irmao = self.array[pai].left.unwrap();  // enquanto index é black e não root, ele tem que ter irmao
@@ -604,6 +613,7 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                             } else {
                                 (x, pai) = (Right, i)
                             }
+                            condition = self.is_black(x, pai);
                         }
                         None => {
                             self.array[pai].color = Black;
@@ -626,13 +636,8 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                     let sobrinho_left = self.array[irmao].left.unwrap();
                     self.array[sobrinho_left].color = Black;
                     self.right_rotate(pai);
-                    match self.array[pai].right {
-                        Some(i) => {
-                            self.array[i].color = Black;
-                            break;
-                        }
-                        None => break
-                    }
+                    self.array[root].color = Black;
+                    break;
                 }
             }
         }
@@ -1695,6 +1700,19 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
 
         let mut condition = self.is_black(x, pai);
 
+        if !condition {
+            match x {   // se for vermelho, muda pra preto e nem entra no while
+                Left => {
+                    let left = self.array[pai].left.unwrap();
+                    self.array[left].color = Black;
+                }
+                Right => {
+                    let right = self.array[pai].right.unwrap();
+                    self.array[right].color = Black;
+                }
+            }
+        }
+
         while condition {  // se x se tornar root, colocamos como black e break loop. Senão continuamos.
 
             if let Left = x {
@@ -1717,6 +1735,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                             } else {
                                 (x, pai) = (Right, i)
                             }
+                            condition = self.is_black(x, pai);
                         }
                         None => {
                             self.array[pai].color = Black;
@@ -1766,6 +1785,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                             } else {
                                 (x, pai) = (Right, i)
                             }
+                            condition = self.is_black(x, pai);
                         }
                         None => {
                             self.array[pai].color = Black;
