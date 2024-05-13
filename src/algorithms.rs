@@ -302,8 +302,12 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
 
         let mut fixed = if let Red = self.array[index].color { false } else { true };
 
+        let x;
+        let xp= self.array[index].parent; // caso em que x é None, usamos ele como novo pai.
+
         match (self.array[index].left, self.array[index].right) {
             (None, None) => {
+                x = None;
                 match self.array[index].parent {
                     Some(i) => {
                         if self.array[index].value < self.array[i].value {
@@ -318,41 +322,47 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                     }
                 }
             },
-            (None, Some(j)) => {
+            (None, Some(j2)) => {
+                x = Some(j2);
                 match self.array[index].parent {
                     Some(i) => {
                         if self.array[index].value < self.array[i].value {
-                            self.array[i].left = Some(j);
+                            self.array[i].left = Some(j2);
                         } else {
-                            self.array[i].right = Some(j);
+                            self.array[i].right = Some(j2);
                         }
-                        self.array[j].parent = Some(i);
+                        self.array[j2].parent = Some(i);
                     },
                     None => {
                         self.root = Some(j);
-                        self.array[j].parent = None;
+                        self.array[j2].parent = None;
                     }
                 }
             },
-            (Some(j), None) => {
+            (Some(j1), None) => {
+                x = Some(j1);
                 match self.array[index].parent {
                     Some(i) => {
                         if self.array[index].value < self.array[i].value {
-                            self.array[i].left = Some(j);
+                            self.array[i].left = Some(j1);
                         } else {
-                            self.array[i].right = Some(j);
+                            self.array[i].right = Some(j1);
                         }
-                        self.array[j].parent = Some(i);
+                        self.array[j1].parent = Some(i);
                     },
                     None => {
-                        self.root = Some(j);
-                        self.array[j].parent = None;
+                        self.root = Some(j1);
+                        self.array[j1].parent = None;
                     }
                 }
             },
             (Some(j1), Some(j2)) => {
 
                 let sucessor = self.sucessor(index).unwrap();
+
+                let filho_sucessor = self.array[sucessor].right;
+
+                x = filho_sucessor;
 
                 fixed = if let Red = self.array[sucessor].color { false } else { true };
 
@@ -382,7 +392,6 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
 
                     self.array[j2].parent = Some(sucessor);
 
-                    let filho_sucessor = self.array[sucessor].right;
                     self.array[sucessor].right = Some(j2);
 
                     match filho_sucessor {
@@ -428,15 +437,101 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         }
 
         if fixed {
-            self.deletion_fixed_up();
+            self.deletion_fixed_up(x, xp);
         }
 
         return Some(self.array.pop().unwrap().satelite)
     }
 
-    fn deletion_fixed_up(self: &Self) {
+    fn deletion_fixed_up(self: &Self, x: Option<usize>, xp: Option<usize>) {
+
+        let root = match self.root {
+            Some(i) => i,
+            None => return
+        };
+
+        let mut index = match x {
+            Some(i) => i,
+            None => self.len()
+        };
+
+        let mut black = match self.array[index].color {
+            Red => false,
+            Black => true
+        };
+
+        let mut pai = if index == self.len() {
+            xp.unwrap()
+        } else {
+            match self.array[index].parent {
+                Some(i) => i,
+                None => {
+                    self.array[index].color = Black;
+                    return;
+                }
+            }
+        };
+
+        let mut esquerdo = match self.array[pai].left {
+            Some(i) => {
+                if i == index {
+                    true
+                } else {
+                    false
+                }
+            }
+            None => {
+                if index == self.len() {
+                    true
+                } else {
+                    false
+                }
+            }
+        };
+
+        let mut irmao;
+
+        while index != root && black {
+
+            if esquerdo {
+
+                irmao = self.array[pai].right.unwrap();  // enquanto index é black e não root, ele tem que ter irmao
+
+                if let Red = self.array[irmao].color {  // logo ele tem dois filhos black, pois seu irmao é black
+                    self.array[irmao].color = Black;
+                    self.array[pai].color = Red;
+                    self.left_rotate(pai);
+                    irmao = self.array[pai].right.unwrap();  // é o antigo filho left do irmao, que é black
+                }
 
 
+
+
+
+
+
+
+
+            } else {
+
+
+
+
+
+
+            }
+
+
+
+
+
+
+
+
+
+
+        }
+        self.array[index].color  =Black;
     }
 
     pub fn minimum(self: &Self) -> Option<&T> {
@@ -1362,10 +1457,13 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
             None => return None
         };
 
+        let fixed_index;
+
         let mut fixed = if let Red = self.array[index].color { false } else { true };
 
         match (self.array[index].left, self.array[index].right) {
             (None, None) => {
+                fixed_index = None;
                 match self.array[index].parent {
                     Some(i) => {
                         match self.array[i].left {
@@ -1386,6 +1484,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                 }
             },
             (None, Some(j2)) => {
+                fixed_index = Some(j2);
                 match self.array[index].parent {
                     Some(i) => {
                         match self.array[i].left {
@@ -1407,6 +1506,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                 }
             },
             (Some(j1), None) => {
+                fixed_index = Some(j1);
                 match self.array[index].parent {
                     Some(i) => {
                         match self.array[i].left {
@@ -1430,6 +1530,10 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
             (Some(j1), Some(j2)) => {
 
                 let sucessor = self.sucessor(index).unwrap();
+
+                let filho_sucessor = self.array[sucessor].right;
+
+                fixed_index = filho_sucessor;
 
                 fixed = if let Red = self.array[sucessor].color { false } else { true };
 
@@ -1464,7 +1568,6 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
 
                     self.array[j2].parent = Some(sucessor);
 
-                    let filho_sucessor = self.array[sucessor].right;
                     self.array[sucessor].right = Some(j2);
 
                     match filho_sucessor {
@@ -1515,13 +1618,13 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         }
 
         if fixed {
-            self.deletion_fixed_up();
+            self.deletion_fixed_up(fixed_index);
         }
 
         return Some(self.array.pop().unwrap().satelite)
     }
 
-    fn deletion_fixed_up(self: &Self) {
+    fn deletion_fixed_up(self: &Self, opt_index: Option<usize>) {
 
 
     }
