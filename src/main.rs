@@ -19,7 +19,7 @@ fn main() {
 
     b.print_elements();
 
-    b.deletion(&6);
+    b.deletion(&15);
 
     b.print_elements();
 

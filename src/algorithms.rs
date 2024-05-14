@@ -537,7 +537,7 @@ impl<T: PartialOrd + Debug, E: Debug> RedBlackTree<T,E> {
     }
 
     fn deletion_fixed_up(self: &mut Self, mut x: Child, mut pai: usize) {
-        println!("{:?}", self.array[pai]);
+
         let root = match self.root {
             Some(i) => i,
             None => return
@@ -546,8 +546,6 @@ impl<T: PartialOrd + Debug, E: Debug> RedBlackTree<T,E> {
         let mut irmao;
 
         let mut condition = self.is_black(x, pai);
-
-        println!("{:?}", condition);
 
         if !condition {
             match x {   // se for vermelho, muda pra preto e nem entra no while
@@ -563,7 +561,7 @@ impl<T: PartialOrd + Debug, E: Debug> RedBlackTree<T,E> {
         }
 
         while condition {  // se x se tornar root, colocamos como black e break loop. Senão continuamos.
-            println!("oi");
+
             if let Left = x {
 
                 irmao = self.array[pai].right.unwrap();  // enquanto index é black e não root, ele tem que ter irmao
@@ -1722,7 +1720,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
     }
 
     fn deletion_fixed_up(self: &mut Self, mut x: Child, mut pai: usize) {
-        println!("{:?}", pai);
+
         let root = match self.root {
             Some(i) => i,
             None => return
@@ -1731,8 +1729,6 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         let mut irmao;
 
         let mut condition = self.is_black(x, pai);
-
-        println!("{:?}", condition);
 
         if !condition {
             match x {   // se for vermelho, muda pra preto e nem entra no while
@@ -1748,7 +1744,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         }
 
         while condition {  // se x se tornar root, colocamos como black e break loop. Senão continuamos.
-            println!("oi");
+
             if let Left = x {
 
                 irmao = self.array[pai].right.unwrap();  // enquanto index é black e não root, ele tem que ter irmao
