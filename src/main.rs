@@ -19,7 +19,7 @@ fn main() {
 
     b.print_elements();
 
-    b.deletion(&13);
+    b.deletion(&6);
 
     b.print_elements();
 
@@ -45,7 +45,7 @@ fn main() {
 
     b.print_elements();
 
-    b.deletion(&7);
+    b.deletion(&6);
 
     b.print_elements();
 
@@ -76,4 +76,6 @@ fn main() {
     assert!(b.is_red_black_tree());
 
     //b.print_elements();
+
+    //-----------
 }

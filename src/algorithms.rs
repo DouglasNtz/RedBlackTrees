@@ -36,7 +36,7 @@ pub struct RedBlackTreeWithReps<T: PartialOrd, E> {
     array: Vec<Element<T,E>>
 }
 
-impl<T: PartialOrd, E> RedBlackTree<T,E> {
+impl<T: PartialOrd + Debug, E: Debug> RedBlackTree<T,E> {
 
     pub fn new() -> Self {
 
@@ -372,10 +372,16 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                     Some(i) => {
                         if self.is_left(index) {
                             self.array[i].left = Some(j2);
-                            (x, xp) = (Left, i);
+                            if fixed {
+                                self.array[j2].color = Black;
+                                fixed = false;
+                            }
                         } else {
                             self.array[i].right = Some(j2);
-                            (x, xp) = (Right, i);
+                            if fixed {
+                                self.array[j2].color = Black;
+                                fixed = false;
+                            }
                         }
                         self.array[j2].parent = Some(i);
                     },
@@ -392,10 +398,16 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                     Some(i) => {
                         if self.is_left(index) {
                             self.array[i].left = Some(j1);
-                            (x, xp) = (Left, i);
+                            if fixed {
+                                self.array[j1].color = Black;
+                                fixed = false;
+                            }
                         } else {
                             self.array[i].right = Some(j1);
-                            (x, xp) = (Right, i);
+                            if fixed {
+                                self.array[j1].color = Black;
+                                fixed = false;
+                            }
                         }
                         self.array[j1].parent = Some(i);
                     },
@@ -441,6 +453,8 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
 
                 if sucessor != j2 {
 
+                    (x, xp) = (Left, pai_sucessor);
+
                     self.array[j2].parent = Some(sucessor);
 
                     self.array[sucessor].right = Some(j2);
@@ -448,7 +462,7 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
                     match filho_sucessor {
                         Some(k) => {
                             self.array[pai_sucessor].left = Some(k);
-                            self.array[k].parent = Some(pai_sucessor)
+                            self.array[k].parent = Some(pai_sucessor);
                         }
                         None => {
                             self.array[pai_sucessor].left = None;
@@ -523,7 +537,7 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
     }
 
     fn deletion_fixed_up(self: &mut Self, mut x: Child, mut pai: usize) {
-
+        println!("{:?}", self.array[pai]);
         let root = match self.root {
             Some(i) => i,
             None => return
@@ -532,6 +546,8 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         let mut irmao;
 
         let mut condition = self.is_black(x, pai);
+
+        println!("{:?}", condition);
 
         if !condition {
             match x {   // se for vermelho, muda pra preto e nem entra no while
@@ -547,7 +563,7 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         }
 
         while condition {  // se x se tornar root, colocamos como black e break loop. Senão continuamos.
-
+            println!("oi");
             if let Left = x {
 
                 irmao = self.array[pai].right.unwrap();  // enquanto index é black e não root, ele tem que ter irmao
@@ -999,6 +1015,8 @@ impl<T: PartialOrd, E> RedBlackTree<T,E> {
         for &index in &indexes_subtree {
             match (&self.array[index].left, &self.array[index].right) {
                 (None, None) => folhas.push(index),
+                (None, Some(_)) => folhas.push(index),
+                (Some(_), None) => folhas.push(index),
                 _ => {}
             }
         }
@@ -1539,10 +1557,16 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                     Some(i) => {
                         if self.is_left(index) {
                             self.array[i].left = Some(j2);
-                            (x, xp) = (Left, i);
+                            if fixed {
+                                self.array[j2].color = Black;
+                                fixed = false;
+                            }
                         } else {
                             self.array[i].right = Some(j2);
-                            (x, xp) = (Right, i);
+                            if fixed {
+                                self.array[j2].color = Black;
+                                fixed = false;
+                            }
                         }
                         self.array[j2].parent = Some(i);
                     },
@@ -1559,10 +1583,16 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                     Some(i) => {
                         if self.is_left(index) {
                             self.array[i].left = Some(j1);
-                            (x, xp) = (Left, i);
+                            if fixed {
+                                self.array[j1].color = Black;
+                                fixed = false;
+                            }
                         } else {
                             self.array[i].right = Some(j1);
-                            (x, xp) = (Right, i);
+                            if fixed {
+                                self.array[j1].color = Black;
+                                fixed = false;
+                            }
                         }
                         self.array[j1].parent = Some(i);
                     },
@@ -1608,6 +1638,8 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
 
                 if sucessor != j2 {
 
+                    (x, xp) = (Left, pai_sucessor);
+
                     self.array[j2].parent = Some(sucessor);
 
                     self.array[sucessor].right = Some(j2);
@@ -1615,7 +1647,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                     match filho_sucessor {
                         Some(k) => {
                             self.array[pai_sucessor].left = Some(k);
-                            self.array[k].parent = Some(pai_sucessor)
+                            self.array[k].parent = Some(pai_sucessor);
                         }
                         None => {
                             self.array[pai_sucessor].left = None;
@@ -1690,7 +1722,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
     }
 
     fn deletion_fixed_up(self: &mut Self, mut x: Child, mut pai: usize) {
-
+        println!("{:?}", pai);
         let root = match self.root {
             Some(i) => i,
             None => return
@@ -1699,6 +1731,8 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         let mut irmao;
 
         let mut condition = self.is_black(x, pai);
+
+        println!("{:?}", condition);
 
         if !condition {
             match x {   // se for vermelho, muda pra preto e nem entra no while
@@ -1714,7 +1748,7 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         }
 
         while condition {  // se x se tornar root, colocamos como black e break loop. Senão continuamos.
-
+            println!("oi");
             if let Left = x {
 
                 irmao = self.array[pai].right.unwrap();  // enquanto index é black e não root, ele tem que ter irmao
@@ -1758,13 +1792,8 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                     let sobrinho_right = self.array[irmao].right.unwrap();
                     self.array[sobrinho_right].color = Black;
                     self.left_rotate(pai);
-                    match self.array[pai].left {
-                        Some(i) => {
-                            self.array[i].color = Black;
-                            break;
-                        }
-                        None => break
-                    }
+                    self.array[root].color = Black;
+                    break;
                 }
             } else {
                 irmao = self.array[pai].left.unwrap();  // enquanto index é black e não root, ele tem que ter irmao
@@ -1808,13 +1837,8 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
                     let sobrinho_left = self.array[irmao].left.unwrap();
                     self.array[sobrinho_left].color = Black;
                     self.right_rotate(pai);
-                    match self.array[pai].right {
-                        Some(i) => {
-                            self.array[i].color = Black;
-                            break;
-                        }
-                        None => break
-                    }
+                    self.array[root].color = Black;
+                    break;
                 }
             }
         }
@@ -2174,6 +2198,8 @@ impl<T: PartialOrd, E> RedBlackTreeWithReps<T,E> {
         for &index in &indexes_subtree {
             match (&self.array[index].left, &self.array[index].right) {
                 (None, None) => folhas.push(index),
+                (None, Some(_)) => folhas.push(index),
+                (Some(_), None) => folhas.push(index),
                 _ => {}
             }
         }
